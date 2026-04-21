@@ -17,9 +17,8 @@
 - Post opportunity — alumni gate for job/internship/contract
 
 ### To be built or redesigned 🔧
-- Feed (redesign: make default landing page after login)
-- Directory (redesign: list view + filter sidebar, not cards)
-- Community feed (new)
+- Feed (redesign: make default landing page after login, has to be linkedin style with posts as cards with feature to like, comment and share)
+- Directory (redesign:  search-first + discovery sections, not cards)
 - My postings + close opportunity (new)
 - Chat request notifications (new)
 - Direct messaging (new)
