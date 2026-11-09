@@ -27,7 +27,7 @@ A private, verified professional network for the UVA Darden MBA community — al
 
 ## Authentication
 
-- **@virginia.edu emails only** — enforced on the frontend and via a database CHECK constraint
+- **@virginia.edu and @darden.virginia.edu emails only** — enforced on the frontend and via a database CHECK constraint
 - **Email OTP** — no passwords, no OAuth
 - First-time users are routed to `/onboarding`; returning users go straight to `/directory`
 
@@ -53,7 +53,7 @@ This means role automatically transitions from student → alumni on May 1st of 
 
 | Route | Description |
 |---|---|
-| `/` | Login — email OTP entry with @virginia.edu validation |
+| `/` | Login — email OTP entry with UVA/Darden email validation |
 | `/onboarding` | 3-step profile setup for new users |
 | `/directory` | Member directory with availability badges and role labels |
 | `/directory/[id]` | Individual profile with chat request modal |
@@ -74,7 +74,7 @@ Core user profile. No `role` column — derived from `graduation_year`.
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid | FK → auth.users |
-| email | text | must end in @virginia.edu |
+| email | text | must use @virginia.edu or @darden.virginia.edu |
 | full_name | text | required |
 | graduation_year | integer | required — drives role derivation |
 | program | text | MBA, EMBA, etc. |
@@ -161,6 +161,8 @@ No availability options during onboarding — those are set via real-time toggle
 3. Run migrations in the Supabase SQL Editor:
    - `supabase/migrations/001_initial_schema.sql`
    - `supabase/migrations/002_availability_status.sql`
+   - `supabase/migrations/003_close_opportunities.sql`
+   - `supabase/migrations/004_darden_email_domain.sql`
 
 4. Start the dev server:
    ```bash
@@ -171,7 +173,7 @@ No availability options during onboarding — those are set via real-time toggle
 
 ## Build Status
 
-- [x] Auth — email OTP, @virginia.edu enforcement
+- [x] Auth — email OTP, UVA/Darden domain enforcement
 - [x] Onboarding — 3-step, role derived from graduation year
 - [x] Directory — live availability badges, Student/Alumni labels
 - [x] Profile — real-time availability toggles with expiry + notes
