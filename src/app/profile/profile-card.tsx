@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Role } from "@/lib/role";
@@ -128,7 +128,22 @@ export default function ProfileCard({
     if (fieldErrors[key]) setFieldErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
+  // Timer that turns "Saved ✓" back into read mode. Tracked so that opening
+  // the editor again within those two seconds doesn't get closed underneath
+  // the user (review finding on PR #2).
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function clearSavedTimer() {
+    if (savedTimer.current) {
+      clearTimeout(savedTimer.current);
+      savedTimer.current = null;
+    }
+  }
+
+  useEffect(() => clearSavedTimer, []);
+
   function startEdit() {
+    clearSavedTimer();
     setForm(toForm(profile));
     setFieldErrors({});
     setSaveError(null);
@@ -184,7 +199,12 @@ export default function ProfileCard({
     setProfile(data as ProfileCardData);
     setMode("saved");
     router.refresh(); // keep server-rendered nav / other pages in sync
-    setTimeout(() => setMode("read"), 2000);
+    clearSavedTimer();
+    savedTimer.current = setTimeout(() => {
+      savedTimer.current = null;
+      // Only fall back to read mode if nothing else has happened since.
+      setMode((current) => (current === "saved" ? "read" : current));
+    }, 2000);
   }
 
   const initials = initialsOf(mode === "read" || mode === "saved" ? profile.full_name : form.full_name);
