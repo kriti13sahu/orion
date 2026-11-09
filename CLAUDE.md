@@ -238,6 +238,7 @@ Changes save in real time.
 - [x] Directory badges reflect live availability_status only
 - [x] Directory shows Student/Alumni label derived from graduation_year
 - [x] Availability status profile toggles (on /profile page)
+- [x] Edit profile — inline edit mode on /profile (email, graduation_year, program stay locked)
 - [x] Profile detail page (/directory/[id]) with chat request modal
 - [ ] Coffee chat request flow
 - [x] Opportunities board (/opportunities) with filter tabs + inline expand
