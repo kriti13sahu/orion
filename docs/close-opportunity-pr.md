@@ -31,7 +31,7 @@ Additional automated checks: cancelling confirmation makes no save request; open
 
 ## How to check it
 1. Install dependencies with npm ci. Configure .env.local using .env.local.example and your team's Supabase project.
-2. Apply migrations 001, 002, and 003 in order on a fresh test database. On an existing database with 001 and 002 applied, apply only 003_close_opportunities.sql.
+2. Apply migrations 001, 002, 003, and 004 in order on a fresh test database. On an existing database with 001 and 002 applied, apply 003_close_opportunities.sql and 004_darden_email_domain.sql.
 3. Run npm run dev. Use two member accounts, A and B. A should be an alum able to create a job. Create disposable test opportunities.
 4. Scenario 1: as A, expand A's post, select Close opportunity, and confirm. Expect a success message, removal of the card, and updated counts. Refresh; expect the card to remain absent. Record what actually happened.
 5. Scenario 2: as B, expand A's other open post. Expect Express interest and no Close opportunity. To check server enforcement in B's authenticated client, attempt an update of A's post to is_active=false; expect zero updated rows and the post unchanged. Never use a service-role client for this check.
@@ -41,6 +41,9 @@ Additional automated checks: cancelling confirmation makes no save request; open
 
 ## Review and rollout
 Reviewer: Kriti (GitHub username: kriti13sahu, inferred from repository owner; confirm before requesting review).
-Apply migration 003 before testing or releasing the UI. It serializes application inserts with closure through a row lock. An application that obtains the lock first completes before closure; an application after closure is rejected. Existing owner-only update RLS enforces closure permissions.
+Apply migrations 003 and 004 before testing or releasing the UI. It serializes application inserts with closure through a row lock. An application that obtains the lock first completes before closure; an application after closure is rejected. Existing owner-only update RLS enforces closure permissions.
 
 Do not merge until live manual scenarios are recorded and Kriti has reviewed the PR. Part B still requires reviewing Kriti's PR separately.
+
+## Darden sign-in prerequisite
+At the author's request, login validation and the profile email constraint now accept both @virginia.edu and @darden.virginia.edu, case-insensitively. Login trims surrounding whitespace. The login copy names both supported domains. Migration 004 was applied successfully to the test project. Ten paired JavaScript/PostgreSQL checks passed for valid domains, uppercase addresses, unrelated domains, lookalikes, and malformed addresses. TypeScript and login ESLint pass.

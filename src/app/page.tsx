@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const UVA_DOMAIN = "@virginia.edu";
+const UVA_EMAIL = /^[^@\s]+@(?:darden\.)?virginia\.edu$/i;
 const DOMAIN_ERROR =
-  "This platform is only available to the UVA community. Please use your @virginia.edu email.";
+  "This platform is only available to the UVA community. Please use your @virginia.edu or @darden.virginia.edu email.";
 const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === "true";
 
 type Step = "email" | "otp";
@@ -26,7 +26,7 @@ export default function LoginPage() {
     setError(null);
 
     // Frontend domain check — must come before any Supabase call
-    if (!DEV_MODE && !email.toLowerCase().endsWith(UVA_DOMAIN)) {
+    if (!DEV_MODE && !UVA_EMAIL.test(email.trim())) {
       setError(DOMAIN_ERROR);
       return;
     }
@@ -34,7 +34,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: email.toLowerCase(),
+        email: email.trim().toLowerCase(),
         options: {
           shouldCreateUser: true,
           emailRedirectTo: `${window.location.origin}/auth/callback`,
@@ -65,7 +65,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.toLowerCase(),
+        email: email.trim().toLowerCase(),
         token: otp,
         type: "email",
       });
@@ -113,7 +113,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { error: resendError } = await supabase.auth.signInWithOtp({
-        email: email.toLowerCase(),
+        email: email.trim().toLowerCase(),
         options: { shouldCreateUser: true },
       });
       if (resendError) throw resendError;
@@ -146,8 +146,8 @@ export default function LoginPage() {
                 Sign in
               </h2>
               <p className="text-sm text-gray-500 mb-6">
-                Use your <span className="font-medium">@virginia.edu</span>{" "}
-                email to get started.
+                Use your <span className="font-medium">@virginia.edu</span> or{" "}
+                <span className="font-medium">@darden.virginia.edu</span> email to get started.
               </p>
 
               <form onSubmit={handleSendOtp} className="space-y-4">
