@@ -175,6 +175,7 @@ No availability options during onboarding — those are set via real-time toggle
 - [x] Onboarding — 3-step, role derived from graduation year
 - [x] Directory — live availability badges, Student/Alumni labels
 - [x] Profile — real-time availability toggles with expiry + notes
+- [x] Edit profile — inline edit on /profile (name, location, LinkedIn, bio; role/company/industry for alumni)
 - [x] Profile detail — chat request modal
 - [x] Opportunities board — filter tabs, inline expand, express interest
 - [x] Post opportunity — alumni gate for jobs/internships
