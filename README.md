@@ -60,6 +60,7 @@ This means role automatically transitions from student → alumni on May 1st of 
 | `/profile` | Current user's profile and real-time availability toggles |
 | `/opportunities` | Job, internship, and co-founder postings with filter tabs |
 | `/opportunities/new` | Post an opportunity (alumni-gated for jobs/internships) |
+| `/requests` | Coffee chat requests — accept/decline received, track sent |
 | `/feed` | Community feed *(planned)* |
 | `/messages` | Direct messaging *(planned)* |
 | `/admin` | School admin dashboard *(planned)* |
@@ -181,7 +182,7 @@ No availability options during onboarding — those are set via real-time toggle
 - [x] Profile detail — chat request modal
 - [x] Opportunities board — filter tabs, inline expand, express interest
 - [x] Post opportunity — alumni gate for jobs/internships
-- [ ] Coffee chat request flow
+- [x] Coffee chat requests — accept/decline inbox at /requests, sender sees status
 - [ ] Community feed
 - [ ] Direct messaging
 - [ ] Admin dashboard

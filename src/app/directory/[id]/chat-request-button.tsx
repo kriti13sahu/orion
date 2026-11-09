@@ -118,7 +118,7 @@ export default function ChatRequestButton({ fromUserId, toUserId, toName }: Prop
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-1">Request sent!</h2>
                 <p className="text-sm text-gray-500 mb-6">
-                  {firstName} will be notified. You'll hear back via messages.
+                  {firstName} can accept or decline it. Track it under Requests → Sent.
                 </p>
                 <button
                   type="button"
