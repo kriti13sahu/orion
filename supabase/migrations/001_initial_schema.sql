@@ -13,7 +13,7 @@ create table if not exists public.profiles (
   full_name        text        not null,
   graduation_year  integer,
   program          text,
-  current_role     text,
+  "current_role"   text,
   current_company  text,
   industry         text,
   location         text,

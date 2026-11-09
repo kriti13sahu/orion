@@ -18,7 +18,7 @@ The locked Supabase JS version was incompatible with the existing SSR package. P
 The first implementation used Set spread syntax in the new close handler, following the existing apply handler. TypeScript rejected it because the project does not set an ES2015-or-newer compilation target. Validation caught this; both handlers now use Array.from before adding an ID. This is an AI validation finding; the author should add their own observations after manual testing.
 
 ## Scenario results
-Manual testing against the actual app is PENDING for all four scenarios. This checkout has no Supabase environment configuration or test accounts. Automated checks below are supporting evidence, not a substitute for the assignment's manual run.
+Manual testing against the actual app is PENDING for all four scenarios. Supabase is now configured and the schema is installed; member sign-in and a second test account are still needed. Automated checks below are supporting evidence, not a substitute for the assignment's manual run.
 
 | Scenario | Automated evidence | Manual result |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Manual testing against the actual app is PENDING for all four scenarios. This ch
 | Save fails | Simulated failed save retains card and shows error; retry succeeds | Pending |
 | Stale page | PostgreSQL trigger rejects insert with P0001; UI displays closed-opportunity message | Pending |
 
-Additional automated checks: cancelling confirmation makes no save request; open posts accept applications; existing applications survive closure. PostgreSQL tests used PGlite with equivalent ownership policies and the actual migration. UI tests used React and JSDOM with mocked Supabase responses. TypeScript and targeted ESLint pass. Production build compiles and completes type checking, then fails prerendering the existing login and onboarding pages because the Supabase URL and key are absent.
+Additional automated checks: cancelling confirmation makes no save request; open posts accept applications; existing applications survive closure. PostgreSQL tests used PGlite with equivalent ownership policies and the actual migration. UI tests used React and JSDOM with mocked Supabase responses. TypeScript and targeted ESLint pass. Production build passes after configuring the new Orion Supabase project. All three migrations were applied successfully; initial migration 001 needed its reserved current_role column name quoted. Live manual scenarios remain pending member sign-in.
 
 ## How to check it
 1. Install dependencies with npm ci. Configure .env.local using .env.local.example and your team's Supabase project.
