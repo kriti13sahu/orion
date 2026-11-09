@@ -4,7 +4,7 @@ export type OpportunityType = "job" | "cofounder" | "internship" | "contract";
 
 export type ChatRequestStatus = "pending" | "accepted" | "declined";
 
-export interface Profile {
+export type Profile = {
   id: string;
   email: string;
   full_name: string;
@@ -19,9 +19,9 @@ export interface Profile {
   is_verified: boolean;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface AvailabilityStatus {
+export type AvailabilityStatus = {
   id: string;
   user_id: string;
   type: AvailabilityType;
@@ -29,18 +29,18 @@ export interface AvailabilityStatus {
   expires_at: string | null;
   note: string | null;
   updated_at: string;
-}
+};
 
-export interface ChatRequest {
+export type ChatRequest = {
   id: string;
   from_user_id: string;
   to_user_id: string;
   message: string;
   status: ChatRequestStatus;
   created_at: string;
-}
+};
 
-export interface Opportunity {
+export type Opportunity = {
   id: string;
   posted_by: string;
   type: OpportunityType;
@@ -49,40 +49,59 @@ export interface Opportunity {
   description: string;
   is_active: boolean;
   created_at: string;
-}
+};
 
-export interface OpportunityApplication {
+export type OpportunityApplication = {
   id: string;
   opportunity_id: string;
   applicant_id: string;
   note: string | null;
   created_at: string;
-}
+};
 
 export type Database = {
   public: {
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
     Tables: {
       profiles: {
+        Relationships: [];
         Row: Profile;
         Insert: Omit<Profile, "created_at" | "updated_at">;
         Update: Partial<Omit<Profile, "id" | "created_at">>;
       };
       availability_status: {
+        Relationships: [{
+          foreignKeyName: "availability_status_user_id_fkey";
+          columns: ["user_id"];
+          isOneToOne: false;
+          referencedRelation: "profiles";
+          referencedColumns: ["id"];
+        }];
         Row: AvailabilityStatus;
         Insert: Omit<AvailabilityStatus, "id" | "updated_at">;
         Update: Partial<Pick<AvailabilityStatus, "is_active" | "expires_at" | "note">>;
       };
       chat_requests: {
+        Relationships: [];
         Row: ChatRequest;
         Insert: Omit<ChatRequest, "id" | "created_at">;
         Update: Partial<Pick<ChatRequest, "status">>;
       };
       opportunities: {
+        Relationships: [{
+          foreignKeyName: "opportunities_posted_by_fkey";
+          columns: ["posted_by"];
+          isOneToOne: false;
+          referencedRelation: "profiles";
+          referencedColumns: ["id"];
+        }];
         Row: Opportunity;
         Insert: Omit<Opportunity, "id" | "created_at">;
         Update: Partial<Omit<Opportunity, "id" | "created_at">>;
       };
       opportunity_applications: {
+        Relationships: [];
         Row: OpportunityApplication;
         Insert: Omit<OpportunityApplication, "id" | "created_at">;
         Update: never;

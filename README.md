@@ -161,6 +161,7 @@ No availability options during onboarding — those are set via real-time toggle
 3. Run migrations in the Supabase SQL Editor:
    - `supabase/migrations/001_initial_schema.sql`
    - `supabase/migrations/002_availability_status.sql`
+   - `supabase/migrations/003_close_opportunities.sql`
 
 4. Start the dev server:
    ```bash

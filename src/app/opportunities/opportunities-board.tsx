@@ -66,6 +66,9 @@ export default function OpportunitiesBoard({
 }) {
   const supabase = createClient();
 
+  const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
+  const [closingId, setClosingId] = useState<string | null>(null);
+  const [notice, setNotice] = useState("");
   const [tab, setTab] = useState<TabId>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set(initialAppliedIds));
@@ -74,8 +77,9 @@ export default function OpportunitiesBoard({
 
   // ── Filter ───────────────────────────────────────────────────────────────
 
+  const activeOpportunities = opportunities.filter((o) => !closedIds.has(o.id));
   const filtered =
-    tab === "all" ? opportunities : opportunities.filter((o) => o.type === tab);
+    tab === "all" ? activeOpportunities : activeOpportunities.filter((o) => o.type === tab);
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
@@ -83,27 +87,54 @@ export default function OpportunitiesBoard({
     setExpandedId((prev) => (prev === id ? null : id));
   }
 
+  async function handleClose(opportunityId: string) {
+    if (!window.confirm("Close this opportunity? Members will no longer be able to express interest.")) return;
+    setClosingId(opportunityId);
+    setErrors((prev) => ({ ...prev, [opportunityId]: "" }));
+    try {
+      const { data, error } = await supabase
+        .from("opportunities")
+        .update({ is_active: false })
+        .eq("id", opportunityId)
+        .eq("posted_by", currentUserId)
+        .select("id")
+        .single();
+      if (error || !data) throw new Error("Close failed");
+      setClosedIds((prev) => new Set(Array.from(prev).concat(opportunityId)));
+      setNotice("Opportunity closed. Members can no longer express interest.");
+    } catch {
+      setErrors((prev) => ({ ...prev, [opportunityId]: "Could not close this opportunity. Please try again." }));
+    } finally {
+      setClosingId(null);
+    }
+  }
+
   async function handleApply(opportunityId: string) {
     setApplyingId(opportunityId);
     setErrors((prev) => ({ ...prev, [opportunityId]: "" }));
 
-    const { error } = await supabase.from("opportunity_applications").insert({
-      opportunity_id: opportunityId,
-      applicant_id: currentUserId,
-      note: null,
-    });
+    try {
+      const { error } = await supabase.from("opportunity_applications").insert({
+        opportunity_id: opportunityId,
+        applicant_id: currentUserId,
+        note: null,
+      });
 
-    if (!error || error.code === "23505") {
-      // 23505 = unique_violation — already applied, treat as success
-      setAppliedIds((prev) => new Set([...prev, opportunityId]));
-    } else {
-      setErrors((prev) => ({
-        ...prev,
-        [opportunityId]: "Failed to submit. Please try again.",
-      }));
+      if (!error || error.code === "23505") {
+        setAppliedIds((prev) => new Set(Array.from(prev).concat(opportunityId)));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          [opportunityId]: error.code === "P0001" && error.message.includes("Opportunity is closed")
+            ? "This opportunity has closed and is no longer accepting interest. Refresh to update the board."
+            : "Failed to submit. Please try again.",
+        }));
+      }
+    } catch {
+      setErrors((prev) => ({ ...prev, [opportunityId]: "Failed to submit. Please try again." }));
+    } finally {
+      setApplyingId(null);
     }
-
-    setApplyingId(null);
   }
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -129,13 +160,15 @@ export default function OpportunitiesBoard({
         </Link>
       </div>
 
+      <p role="status" className="text-sm text-green-700 mb-4">{notice}</p>
+
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
         {TABS.map((t) => {
           const count =
             t.id === "all"
-              ? opportunities.length
-              : opportunities.filter((o) => o.type === t.id).length;
+              ? activeOpportunities.length
+              : activeOpportunities.filter((o) => o.type === t.id).length;
           return (
             <button
               key={t.id}
@@ -259,9 +292,14 @@ export default function OpportunitiesBoard({
 
                     <div className="mt-4 flex items-center gap-3">
                       {isOwn ? (
-                        <span className="text-xs text-gray-400 italic">
-                          This is your post.
-                        </span>
+                        <button
+                          type="button"
+                          disabled={closingId !== null}
+                          onClick={() => handleClose(opp.id)}
+                          className="px-4 py-2 text-sm font-medium text-red-700 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {closingId === opp.id ? "Closing…" : "Close opportunity"}
+                        </button>
                       ) : hasApplied ? (
                         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg px-3.5 py-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,7 +319,7 @@ export default function OpportunitiesBoard({
                       )}
 
                       {errors[opp.id] && (
-                        <p className="text-xs text-red-600">{errors[opp.id]}</p>
+                        <p role="alert" className="text-xs text-red-600">{errors[opp.id]}</p>
                       )}
                     </div>
                   </div>
