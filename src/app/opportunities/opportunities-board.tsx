@@ -68,7 +68,7 @@ export default function OpportunitiesBoard({
 
   const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
   const [closingId, setClosingId] = useState<string | null>(null);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<{ text: string; tone: "success" | "info" } | null>(null);
   const [tab, setTab] = useState<TabId>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set(initialAppliedIds));
@@ -90,6 +90,7 @@ export default function OpportunitiesBoard({
   async function handleClose(opportunityId: string) {
     if (!window.confirm("Close this opportunity? Members will no longer be able to express interest.")) return;
     setClosingId(opportunityId);
+    setNotice(null);
     setErrors((prev) => ({ ...prev, [opportunityId]: "" }));
     try {
       const { data, error } = await supabase
@@ -100,8 +101,8 @@ export default function OpportunitiesBoard({
         .select("id")
         .single();
       if (error || !data) throw new Error("Close failed");
-      setClosedIds((prev) => new Set(Array.from(prev).concat(opportunityId)));
-      setNotice("Opportunity closed. Members can no longer express interest.");
+      markClosed(opportunityId);
+      setNotice({ text: "Opportunity closed. Members can no longer express interest.", tone: "success" });
     } catch {
       setErrors((prev) => ({ ...prev, [opportunityId]: "Could not close this opportunity. Please try again." }));
     } finally {
@@ -109,8 +110,14 @@ export default function OpportunitiesBoard({
     }
   }
 
+  function markClosed(opportunityId: string) {
+    setClosedIds((prev) => new Set(Array.from(prev).concat(opportunityId)));
+    setExpandedId((prev) => (prev === opportunityId ? null : prev));
+  }
+
   async function handleApply(opportunityId: string) {
     setApplyingId(opportunityId);
+    setNotice(null);
     setErrors((prev) => ({ ...prev, [opportunityId]: "" }));
 
     try {
@@ -122,13 +129,16 @@ export default function OpportunitiesBoard({
 
       if (!error || error.code === "23505") {
         setAppliedIds((prev) => new Set(Array.from(prev).concat(opportunityId)));
+      } else if (error.code === "OR410" || error.code === "OR404") {
+        // Raised by the require_open_opportunity trigger (migration 003):
+        // the post was closed or deleted after this page loaded.
+        markClosed(opportunityId);
+        setNotice({
+          text: "That opportunity is no longer accepting interest and has been removed from the board.",
+          tone: "info",
+        });
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          [opportunityId]: error.code === "P0001" && error.message.includes("Opportunity is closed")
-            ? "This opportunity has closed and is no longer accepting interest. Refresh to update the board."
-            : "Failed to submit. Please try again.",
-        }));
+        setErrors((prev) => ({ ...prev, [opportunityId]: "Failed to submit. Please try again." }));
       }
     } catch {
       setErrors((prev) => ({ ...prev, [opportunityId]: "Failed to submit. Please try again." }));
@@ -160,7 +170,13 @@ export default function OpportunitiesBoard({
         </Link>
       </div>
 
-      <p role="status" className="text-sm text-green-700 mb-4">{notice}</p>
+      <div role="status">
+        {notice && (
+          <p className={`text-sm mb-4 ${notice.tone === "success" ? "text-green-700" : "text-gray-600"}`}>
+            {notice.text}
+          </p>
+        )}
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">

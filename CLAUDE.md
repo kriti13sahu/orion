@@ -243,6 +243,7 @@ Changes save in real time.
 - [x] Opportunities board (/opportunities) with filter tabs + inline expand
 - [x] Post an opportunity (/opportunities/new, alumni gate for job/internship/contract)
 - [x] Express interest / apply (deduplication via unique constraint + 23505 handling)
+- [x] Close own opportunity (owner-only via RLS; 003_close_opportunities.sql trigger rejects interest in closed posts with SQLSTATE OR410 / OR404 — run in Supabase SQL Editor)
 - [ ] Community feed
 - [ ] Direct messaging
 - [ ] Admin dashboard

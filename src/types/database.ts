@@ -83,7 +83,22 @@ export type Database = {
         Update: Partial<Pick<AvailabilityStatus, "is_active" | "expires_at" | "note">>;
       };
       chat_requests: {
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "chat_requests_from_user_id_fkey";
+            columns: ["from_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chat_requests_to_user_id_fkey";
+            columns: ["to_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
         Row: ChatRequest;
         Insert: Omit<ChatRequest, "id" | "created_at">;
         Update: Partial<Pick<ChatRequest, "status">>;
@@ -101,7 +116,22 @@ export type Database = {
         Update: Partial<Omit<Opportunity, "id" | "created_at">>;
       };
       opportunity_applications: {
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_applications_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunity_applications_applicant_id_fkey";
+            columns: ["applicant_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
         Row: OpportunityApplication;
         Insert: Omit<OpportunityApplication, "id" | "created_at">;
         Update: never;

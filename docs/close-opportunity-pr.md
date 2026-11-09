@@ -12,7 +12,7 @@ As a hiring alum, I want to close an opportunity I posted so that members stop e
 ## What changed
 Owners can close their posts from the expanded opportunity card after confirmation. Successful closure removes the card and updates tab counts; failures keep the card with a retry message. A database trigger prevents new applications to closed posts, including from stale pages, while retaining existing applications.
 
-The locked Supabase JS version was incompatible with the existing SSR package. Pinning JS to the originally specified 2.49.4 and completing database type metadata allows the project to typecheck. No schema changes are introduced by the type definitions.
+The locked Supabase JS version was incompatible with the existing SSR package. Upgrading `@supabase/ssr` to ^0.12.7 and `@supabase/supabase-js` to ^2.119.0, plus completing database type metadata, allows the project to typecheck. No schema changes are introduced by the type definitions.
 
 ## What the AI got wrong and how it was caught
 The first implementation used Set spread syntax in the new close handler, following the existing apply handler. TypeScript rejected it because the project does not set an ES2015-or-newer compilation target. Validation caught this; both handlers now use Array.from before adding an ID. This is an AI validation finding; the author should add their own observations after manual testing.
@@ -27,6 +27,8 @@ All four browser scenarios passed, as reported by the author after following the
 | 3. Save fails | Tried closing while Chrome Network was Offline, then restored networking and retried | Error with post retained; retry succeeds | PASS — offline error retained the post; online retry closed it |
 | 4. Stale page | Kept the post open as a second member, closed it as owner, then expressed interest without refreshing | Submission rejected with a closure message | PASS — closed-opportunity error appeared |
 
+Note: after review, scenario 4's behavior changed. The trigger now raises SQLSTATE OR410 (closed) or OR404 (deleted), and instead of an inline error the board removes the closed card and shows a notice. Re-run migration 003 and re-check scenario 4 against the updated build.
+
 Additional automated checks: cancelling confirmation makes no save request; open posts accept applications; existing applications survive closure. PostgreSQL tests used PGlite with equivalent ownership policies and the actual migration. UI tests used React and JSDOM with mocked Supabase responses. TypeScript and targeted ESLint pass. Production build passes after configuring the new Orion Supabase project. All four migrations were applied successfully; initial migration 001 needed its reserved current_role column name quoted.
 
 ## How to check it
@@ -36,12 +38,12 @@ Additional automated checks: cancelling confirmation makes no save request; open
 4. Scenario 1: as A, expand A's post, select Close opportunity, and confirm. Expect a success message, removal of the card, and updated counts. Refresh; expect the card to remain absent. Record what actually happened.
 5. Scenario 2: as B, expand A's other open post. Expect Express interest and no Close opportunity. To check server enforcement in B's authenticated client, attempt an update of A's post to is_active=false; expect zero updated rows and the post unchanged. Never use a service-role client for this check.
 6. Scenario 3: as A, load and expand an open post. Switch the browser's Network tools to Offline, close and confirm, and wait for the error. Expect the post to remain and the close control to be enabled again. Restore networking and retry; expect successful removal.
-7. Scenario 4: load A's open post as B in a separate browser session. Close it as A. Without refreshing B's page, express interest as B. Expect the closed-opportunity error and no new application. Refresh B's page; expect the post to be absent.
+7. Scenario 4: load A's open post as B in a separate browser session. Close it as A. Without refreshing B's page, express interest as B. Expect the card to disappear with a notice that the opportunity is no longer accepting interest, and no new application. Refresh B's page; expect the post to remain absent.
 8. For each scenario, record the action, expected result, observed result, and pass/fail; attach screenshots if useful. If anything fails, document whether code or scenario changed, then rerun.
 
 ## Review and rollout
 Reviewer: Kriti (GitHub username: kriti13sahu, inferred from repository owner; confirm before requesting review).
-Apply migrations 003 and 004 before testing or releasing the UI. It serializes application inserts with closure through a row lock. An application that obtains the lock first completes before closure; an application after closure is rejected. Existing owner-only update RLS enforces closure permissions.
+Apply migrations 003 and 004 before testing or releasing the UI. Migration 003 is safe to re-run; re-run it on databases that applied the earlier version. Each application takes a SHARE lock on the opportunity row, so closure waits for in-flight applications and later applications are rejected, while concurrent applications do not block each other. Existing owner-only update RLS enforces closure permissions.
 
 Manual scenarios are recorded above. Do not merge until Kriti has reviewed the PR. Part B still requires reviewing Kriti's PR separately.
 
