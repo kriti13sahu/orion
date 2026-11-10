@@ -3,6 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_ROUTES = ["/", "/auth/callback"];
 
+// Test login (src/app/dev-login) is public only when explicitly enabled.
+if (process.env.NEXT_PUBLIC_ENABLE_TEST_LOGIN === "true") {
+  PUBLIC_ROUTES.push("/dev-login");
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
