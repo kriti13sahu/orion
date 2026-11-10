@@ -23,6 +23,7 @@ Core use cases:
 ## Authentication Rules — CRITICAL
 - **Only @virginia.edu email addresses are allowed.** No exceptions.
 - Auth method is **email OTP only** (no passwords, no Google OAuth).
+- **Pilot exception:** `/dev-login` allows email + password sign-in for test accounts created in Supabase, only when `NEXT_PUBLIC_ENABLE_TEST_LOGIN=true`. Remove before launch.
 - The @virginia.edu check must happen in **two places**:
   1. On the frontend before calling Supabase (show error if not virginia.edu)
   2. As a server-side check / Supabase auth hook
