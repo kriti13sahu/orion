@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import DirectoryList from "./directory-list";
-import type { DirectoryProfile } from "./directory-list";
+import type { DirectoryProfile } from "./directory-filter";
 
 export default async function DirectoryPage() {
   const supabase = createClient();

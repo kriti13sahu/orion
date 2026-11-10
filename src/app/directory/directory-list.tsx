@@ -3,28 +3,10 @@
 import { useMemo, useState } from "react";
 import { getRole } from "@/lib/role";
 import type { AvailabilityType } from "@/types/database";
+import { filterDirectoryMembers, getActiveStatuses } from "./directory-filter";
+import type { DirectoryProfile, RoleFilter } from "./directory-filter";
 
 // ── Types & constants ─────────────────────────────────────────────────────────
-
-export type AvailabilityRow = {
-  type: AvailabilityType;
-  is_active: boolean;
-  expires_at: string | null;
-};
-
-export type DirectoryProfile = {
-  id: string;
-  full_name: string;
-  current_role: string | null;
-  current_company: string | null;
-  industry: string | null;
-  location: string | null;
-  graduation_year: number | null;
-  program: string | null;
-  availability_status: AvailabilityRow[] | null;
-};
-
-type RoleFilter = "all" | "student" | "alumni";
 
 const AVAILABILITY_LABELS: Record<AvailabilityType, string> = {
   coffee_chats: "Coffee chats",
@@ -46,10 +28,6 @@ const ROLE_OPTIONS: { id: RoleFilter; label: string }[] = [
   { id: "alumni",  label: "Alumni" },
 ];
 
-function isActiveStatus(row: AvailabilityRow): boolean {
-  return row.is_active && (!row.expires_at || new Date(row.expires_at) > new Date());
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function DirectoryList({ profiles }: { profiles: DirectoryProfile[] }) {
@@ -63,30 +41,13 @@ export default function DirectoryList({ profiles }: { profiles: DirectoryProfile
       profiles.map((p) => ({
         profile: p,
         role: p.graduation_year ? getRole(p.graduation_year) : null,
-        activeStatuses: (p.availability_status ?? []).filter(isActiveStatus),
+        activeStatuses: getActiveStatuses(p.availability_status),
       })),
     [profiles]
   );
 
-  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-
-  const visible = members.filter(({ profile, role, activeStatuses }) => {
-    if (roleFilter !== "all" && role !== roleFilter) return false;
-    if (openTo !== "any" && !activeStatuses.some((s) => s.type === openTo)) return false;
-    if (terms.length === 0) return true;
-    // Professional fields are alumni-only (CLAUDE.md), so don't match students on them.
-    const haystack = [
-      profile.full_name,
-      profile.location,
-      ...(role === "alumni" ? [profile.current_role, profile.current_company, profile.industry] : []),
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return terms.every((t) => haystack.includes(t));
-  });
-
-  const isFiltered = terms.length > 0 || roleFilter !== "all" || openTo !== "any";
+  const visible = filterDirectoryMembers(members, query, roleFilter, openTo);
+  const isFiltered = query.trim().length > 0 || roleFilter !== "all" || openTo !== "any";
 
   function clearFilters() {
     setQuery("");
