@@ -237,6 +237,7 @@ Changes save in real time.
 - [x] Availability status migration (002_availability_status.sql — run in Supabase SQL Editor)
 - [x] Directory badges reflect live availability_status only
 - [x] Directory shows Student/Alumni label derived from graduation_year
+- [x] Directory search + filters — search by name/company/role/industry/location, Student/Alumni filter, "Open to" filter (live statuses only); client-side
 - [x] Availability status profile toggles (on /profile page)
 - [x] Edit profile — inline edit mode on /profile (email, graduation_year, program stay locked)
 - [x] Profile detail page (/directory/[id]) with chat request modal

@@ -55,7 +55,7 @@ This means role automatically transitions from student → alumni on May 1st of 
 |---|---|
 | `/` | Login — email OTP entry with UVA/Darden email validation |
 | `/onboarding` | 3-step profile setup for new users |
-| `/directory` | Member directory with availability badges and role labels |
+| `/directory` | Member directory with search, Student/Alumni and "Open to" filters, availability badges, and role labels |
 | `/directory/[id]` | Individual profile with chat request modal |
 | `/profile` | Current user's profile and real-time availability toggles |
 | `/opportunities` | Job, internship, and co-founder postings with filter tabs |
@@ -175,7 +175,7 @@ No availability options during onboarding — those are set via real-time toggle
 
 - [x] Auth — email OTP, UVA/Darden domain enforcement
 - [x] Onboarding — 3-step, role derived from graduation year
-- [x] Directory — live availability badges, Student/Alumni labels
+- [x] Directory — search, Student/Alumni and "Open to" filters, live availability badges, Student/Alumni labels
 - [x] Profile — real-time availability toggles with expiry + notes
 - [x] Edit profile — inline edit on /profile (name, location, LinkedIn, bio; role/company/industry for alumni)
 - [x] Profile detail — chat request modal
