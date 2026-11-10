@@ -193,7 +193,7 @@ export default function DirectoryList({ profiles }: { profiles: DirectoryProfile
                     )}
                   </div>
 
-                  {(profile.current_role || profile.current_company) && (
+                  {role === "alumni" && (profile.current_role || profile.current_company) && (
                     <p className="text-sm text-gray-500 truncate">
                       {[profile.current_role, profile.current_company].filter(Boolean).join(" · ")}
                     </p>
