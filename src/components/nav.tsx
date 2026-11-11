@@ -9,11 +9,18 @@ export default async function Nav() {
 
   if (!user) return null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, current_role, current_company")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { count: pendingRequests }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("full_name, current_role, current_company")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("chat_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("to_user_id", user.id)
+      .eq("status", "pending"),
+  ]);
 
   const initials = profile?.full_name
     ? profile.full_name
@@ -39,6 +46,17 @@ export default async function Nav() {
           </Link>
           <Link href="/opportunities" className="hover:text-uva-navy transition-colors">
             Opportunities
+          </Link>
+          <Link href="/requests" className="inline-flex items-center gap-1.5 hover:text-uva-navy transition-colors">
+            Requests
+            {!!pendingRequests && pendingRequests > 0 && (
+              <span
+                className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-uva-orange text-white text-xs font-semibold flex items-center justify-center"
+                aria-label={`${pendingRequests} pending`}
+              >
+                {pendingRequests}
+              </span>
+            )}
           </Link>
           <Link href="/feed" className="hover:text-uva-navy transition-colors">
             Feed

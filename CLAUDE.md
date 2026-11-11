@@ -211,6 +211,7 @@ Changes save in real time.
 | /opportunities | Jobs, co-founder, and project postings |
 | /opportunities/new | Post a new opportunity (alumni only for jobs) |
 | /feed | Community feed (posts, discussion) |
+| /requests | Coffee chat requests — received (accept/decline) and sent (status) |
 | /messages | Direct messages inbox |
 | /messages/[id] | Individual conversation |
 | /profile | Current user's own profile + availability toggles |
@@ -242,7 +243,7 @@ Changes save in real time.
 - [x] Availability status profile toggles (on /profile page)
 - [x] Edit profile — inline edit mode on /profile (email, graduation_year, program stay locked)
 - [x] Profile detail page (/directory/[id]) with chat request modal
-- [ ] Coffee chat request flow
+- [x] Coffee chat request flow — /requests inbox: recipient accepts/declines pending requests (stale answers rejected), sender sees status; email shared only after accept
 - [x] Opportunities board (/opportunities) with filter tabs + inline expand
 - [x] Post an opportunity (/opportunities/new, alumni gate for job/internship/contract)
 - [x] Express interest / apply (deduplication via unique constraint + 23505 handling)
