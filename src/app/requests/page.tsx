@@ -35,9 +35,18 @@ export default async function RequestsPage() {
 
   const peopleById = new Map((people ?? []).map((p) => [p.id, p as PersonSummary]));
 
+  // Emails are only sent to the browser for accepted requests. For pending or
+  // declined ones the email is dropped here, on the server, so it is not in the
+  // page's data at all (not just hidden on screen).
+  // Note: migration 001's "profiles: authenticated read" policy still lets any
+  // member query profiles.email directly; closing that needs a separate change.
   const toItem = (r: (typeof rows)[number]): ChatRequestWithPerson => {
     const otherId = r.from_user_id === user.id ? r.to_user_id : r.from_user_id;
-    return { ...r, other: peopleById.get(otherId) ?? null };
+    const person = peopleById.get(otherId);
+    return {
+      ...r,
+      other: person ? { ...person, email: r.status === "accepted" ? person.email : null } : null,
+    };
   };
 
   const received = rows.filter((r) => r.to_user_id === user.id).map(toItem);

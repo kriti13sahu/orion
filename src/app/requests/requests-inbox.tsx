@@ -11,7 +11,8 @@ import type { ChatRequest, ChatRequestStatus } from "@/types/database";
 export type PersonSummary = {
   id: string;
   full_name: string;
-  email: string;
+  /** Only present for accepted requests; null otherwise (stripped on the server). */
+  email: string | null;
   graduation_year: number | null;
   current_role: string | null;
   current_company: string | null;
@@ -89,7 +90,24 @@ export default function RequestsInbox({
         return;
       }
 
-      setReceived((prev) => prev.map((r) => (r.id === requestId ? { ...r, status: data.status } : r)));
+      // The requester's email isn't on the page until the request is accepted,
+      // so fetch it now that it is.
+      let email: string | null = null;
+      if (data.status === "accepted") {
+        const fromId = received.find((r) => r.id === requestId)?.from_user_id;
+        if (fromId) {
+          const { data: p } = await supabase.from("profiles").select("email").eq("id", fromId).maybeSingle();
+          email = p?.email ?? null;
+        }
+      }
+
+      setReceived((prev) =>
+        prev.map((r) =>
+          r.id === requestId
+            ? { ...r, status: data.status, other: r.other ? { ...r.other, email } : null }
+            : r
+        )
+      );
       setNotice(
         status === "accepted"
           ? "Request accepted. Their email is now shown so you can set up a time."
@@ -204,7 +222,7 @@ export default function RequestsInbox({
                 <p className="mt-3 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{req.message}</p>
 
                 {/* Accepted: share contact so the two can schedule */}
-                {req.status === "accepted" && person && (
+                {req.status === "accepted" && person?.email && (
                   <p className="mt-3 text-sm text-gray-600">
                     {tab === "received" ? "Reply to set up a time: " : `${person.full_name.split(" ")[0]} accepted. Reach them at `}
                     <a href={`mailto:${person.email}`} className="font-medium text-uva-navy hover:underline">
