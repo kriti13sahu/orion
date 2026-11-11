@@ -23,6 +23,7 @@ Core use cases:
 ## Authentication Rules — CRITICAL
 - **Only @virginia.edu email addresses are allowed.** No exceptions.
 - Auth method is **email OTP only** (no passwords, no Google OAuth).
+- **Pilot exception:** `/dev-login` allows email + password sign-in for test accounts created in Supabase, only when `NEXT_PUBLIC_ENABLE_TEST_LOGIN=true`. Remove before launch.
 - The @virginia.edu check must happen in **two places**:
   1. On the frontend before calling Supabase (show error if not virginia.edu)
   2. As a server-side check / Supabase auth hook
@@ -238,6 +239,7 @@ Changes save in real time.
 - [x] Availability status migration (002_availability_status.sql — run in Supabase SQL Editor)
 - [x] Directory badges reflect live availability_status only
 - [x] Directory shows Student/Alumni label derived from graduation_year
+- [x] Directory search + filters — search by name/company/role/industry/location, Student/Alumni filter, "Open to" filter (live statuses only); client-side
 - [x] Availability status profile toggles (on /profile page)
 - [x] Edit profile — inline edit mode on /profile (email, graduation_year, program stay locked)
 - [x] Profile detail page (/directory/[id]) with chat request modal
